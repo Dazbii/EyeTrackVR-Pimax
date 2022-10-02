@@ -37,7 +37,7 @@ class Refractionizer:
         name = f"{type_}_refraction_model_{feature}_degree_{degree}.msgpack"
         path = load_dir / name
         with path.open("rb") as file:
-            config_model = msgpack.unpack(file)
+            config_model = msgpack.unpack(file,raw=False)
             Refractionizer._validate_loaded_model_config(config_model)
             try:
                 return list(
