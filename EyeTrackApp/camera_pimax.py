@@ -86,7 +86,6 @@ def get_image(hwnd, saveDC, saveBitMap):
         bmpstr, 'raw', 'BGRX', 0, 1)
     im = numpy.array(im)
     cropped = im[1+borderTop:im.shape[0]+borderBot,  1+borderLeft:im.shape[1]+borderRight, :]
-    cv2.imshow("test", cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY))
     return cropped
 
 class CameraState(Enum):
@@ -169,9 +168,9 @@ class Camera:
 
     def get_wired_camera_picture(self, should_push):
         try:
-            image = get_image(self.hwnd, self.saveDC, self.saveBitMap)
-            self.frame_number += 1
             if should_push:
+                image = get_image(self.hwnd, self.saveDC, self.saveBitMap)
+                self.frame_number += 1
                 self.push_image_to_queue(image, self.frame_number, fps)
         except:
             print(
