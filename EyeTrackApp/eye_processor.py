@@ -588,7 +588,7 @@ class EyeProcessor:
             peaks, properties  = sp.find_peaks(histr, distance=5)
             minpeak = np.min(peaks)
             thresholdoptics = np.array(minpeak + int(self.config.threshold))
-            thresh = cv2.inRange(self.current_image_gray,lowb,thresholdoptics) #faster than cv2.threshold 
+            thresh = 255 - cv2.inRange(self.current_image_gray,lowb,thresholdoptics) #faster than cv2.threshold 
    
 
 
