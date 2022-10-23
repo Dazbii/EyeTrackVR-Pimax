@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-from config import EyeTrackConfig
+from config import EyeTrackSettingsConfig
 from threading import Event, Thread
 from eye_processor import EyeProcessor, InformationOrigin
 from enum import Enum
@@ -9,7 +9,7 @@ import cv2
 from osc import EyeId
 
 class SettingsWidget:
-    def __init__(self, widget_id: EyeId, main_config: EyeTrackConfig, osc_queue: Queue):
+    def __init__(self, widget_id: EyeId, main_config: EyeTrackSettingsConfig, osc_queue: Queue):
 
         self.gui_show_color_image = f"-SETTING1{widget_id}-"
         self.gui_camera_addr = f"-CAMERAADDR{widget_id}-"
@@ -42,13 +42,13 @@ class SettingsWidget:
        # self.gui_algo_settings_layout = f"-ALGOSETTINGSLAYOUT{widget_id}-"
         
         self.gui_blob_fallback = f"-BLOBFALLBACK{widget_id}-"
+        self.gui_blob_maxsize = f"-BLOBMAXSIZE{widget_id}-"
+        self.gui_blob_minsize = f"-BLOBMINSIZE{widget_id}-"
         self.gui_speed_coefficient = f"-SPEEDCOEFFICIENT{widget_id}-"
         self.gui_min_cutoff = f"-MINCUTOFF{widget_id}-"
+        self.gui_eye_falloff = f"-EYEFALLOFF{widget_id}-"
         self.main_config = main_config
 
-        self.configr = main_config.right_eye
-        
-        self.configl = main_config.left_eye
 
         self.config = main_config.settings
 
@@ -82,6 +82,13 @@ class SettingsWidget:
                     background_color='#424042',
                 ),
             ],
+            [sg.Checkbox(
+                    "Dual Eye Falloff",
+                    default=self.config.gui_eye_falloff,
+                    key=self.gui_eye_falloff,
+                    background_color='#424042',
+                ),
+            ],
 
             [
                 sg.Text("Tracking Algorithim Settings:", background_color='#242224'),
@@ -94,6 +101,27 @@ class SettingsWidget:
                     key=self.gui_blob_fallback,
                     background_color='#424042',
                 ),
+            ],
+            [
+                sg.Text("Min blob size:", background_color='#424042'),
+                sg.Slider(
+                    range=(1, 50),
+                    default_value=self.config.gui_blob_minsize,
+                    orientation="h",
+                    key=self.gui_blob_minsize,
+                    background_color='#424042'
+                ),
+                
+                sg.Text("Max blob size:", background_color='#424042'),
+                sg.Slider(
+                    range=(1, 50),
+                    default_value=self.config.gui_blob_maxsize,
+                    orientation="h",
+                    key=self.gui_blob_maxsize,
+                    background_color='#424042'
+                ),
+
+   
             ],
             [
                 sg.Text("Filter Paramaters:", background_color='#242224'),
@@ -241,16 +269,22 @@ class SettingsWidget:
               #      self.config.capture_source = values[self.gui_camera_addr]
            # changed = True
 
+
+        if self.config.gui_osc_port != values[self.gui_osc_port]:
+            self.config.gui_osc_port = values[self.gui_osc_port]
+            changed = True
+
+        if self.config.gui_osc_address != values[self.gui_osc_address]:
+            self.config.gui_osc_address = values[self.gui_osc_address]
+            changed = True
+
         if self.config.gui_min_cutoff != values[self.gui_min_cutoff]:
             self.config.gui_min_cutoff = values[self.gui_min_cutoff]
-            self.configl.gui_min_cutoff = values[self.gui_min_cutoff]
-            self.configr.gui_min_cutoff = values[self.gui_min_cutoff]
             changed = True
             
         if self.config.gui_speed_coefficient != values[self.gui_speed_coefficient]:
             self.config.gui_speed_coefficient = values[self.gui_speed_coefficient]
-            self.configl.gui_speed_coefficient = values[self.gui_speed_coefficient]
-            self.configr.gui_speed_coefficient = values[self.gui_speed_coefficient]
+
             changed = True
 
 
@@ -260,29 +294,29 @@ class SettingsWidget:
       #  print(self.config.gui_flip_x_axis, values[self.gui_flip_x_axis])
         if self.config.gui_flip_x_axis_right != values[self.gui_flip_x_axis_right]:
             self.config.gui_flip_x_axis_right = values[self.gui_flip_x_axis_right]
-            self.configl.gui_flip_x_axis_right = values[self.gui_flip_x_axis_right]
-            self.configr.gui_flip_x_axis_right = values[self.gui_flip_x_axis_right]
             changed = True
 
         if self.config.gui_flip_x_axis_left != values[self.gui_flip_x_axis_left]:
             self.config.gui_flip_x_axis_left = values[self.gui_flip_x_axis_left]
-            self.configl.gui_flip_x_axis_left = values[self.gui_flip_x_axis_left]
-            self.configr.gui_flip_x_axis_left = values[self.gui_flip_x_axis_left]
             changed = True
 
 
         if self.config.gui_flip_y_axis != values[self.gui_flip_y_axis]:
             self.config.gui_flip_y_axis = values[self.gui_flip_y_axis]
-            self.configl.gui_flip_y_axis = values[self.gui_flip_y_axis]
-            self.configr.gui_flip_y_axis = values[self.gui_flip_y_axis]
             changed = True
 
         if self.config.gui_blob_fallback != values[self.gui_blob_fallback]:
             self.config.gui_blob_fallback = values[self.gui_blob_fallback]
-            self.configl.gui_blob_fallback = values[self.gui_blob_fallback]
-            self.configr.gui_blob_fallback = values[self.gui_blob_fallback]
             changed = True
 
+        if self.config.gui_eye_falloff != values[self.gui_eye_falloff]:
+            self.config.gui_eye_falloff = values[self.gui_eye_falloff]
+            changed = True
+
+        
+        if self.config.gui_blob_maxsize != values[self.gui_blob_maxsize]:
+            self.config.gui_blob_maxsize = values[self.gui_blob_maxsize]
+            changed = True
 
         #print(self.config.gui_flip_x_axis, values[self.gui_flip_x_axis])
     #    if values[self.gui_flip_x_axis] != self.config.gui_flip_x_axis:
