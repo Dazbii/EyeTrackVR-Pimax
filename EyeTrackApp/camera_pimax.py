@@ -170,12 +170,17 @@ class Camera:
         try:
             if should_push:
                 image = get_image(self.hwnd, self.saveDC, self.saveBitMap)
+                scale_percent = 75
+                width = int(image.shape[1] * scale_percent / 100)
+                height = int(image.shape[0] * scale_percent / 100)
+                shrunk_image = cv2.resize(image, (width, height), interpolation=cv2.INTER_AREA)
                 self.frame_number += 1
-                self.push_image_to_queue(image, self.frame_number, fps)
-        except:
+                self.push_image_to_queue(shrunk_image, self.frame_number, fps)
+        except Exception as e:
             print(
                 "Capture source problem, assuming camera disconnected, waiting for reconnect."
             )
+            print(e)
             self.camera_status = CameraState.DISCONNECTED
             pass
 
