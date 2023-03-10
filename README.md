@@ -3,8 +3,6 @@ Picture courtesy of Wackalope#6737
 
 [![GitHub issues](https://img.shields.io/github/issues/RedHawk989/EyeTrackVR?style=plastic)](https://github.com/RedHawk989/EyeTrackVR/issues) [![GitHub forks](https://img.shields.io/github/forks/RedHawk989/EyeTrackVR?style=plastic)](https://github.com/RedHawk989/EyeTrackVR/network) [![GitHub stars](https://img.shields.io/github/stars/RedHawk989/EyeTrackVR?style=plastic)](https://github.com/RedHawk989/EyeTrackVR/stargazers)
 
-[![Project Card](https://project-card-app.herokuapp.com/project_card/RedHawk989/EyeTrackVR)](https://github.com/RedHawk989/EyeTrackVR)
-
 - [EyeTrackVR](#eyetrackvr)
       - [This project is in development and is not fully finished](#this-project-is-in-development-and-is-not-fully-finished)
   - [Hardware](#hardware)
@@ -15,7 +13,7 @@ Picture courtesy of Wackalope#6737
       - [Contact](#contact)
 - [Licenses](#licenses)
 
-### [Documentation](https://redhawk989.github.io/EyeTrackVR/)
+### [Documentation](https://docs.eyetrackvr.dev/)
 
 # EyeTrackVR
 
@@ -26,14 +24,14 @@ Open source and *affordable* VR eye tracker platform for [VRChat](https://hello.
 
 
 ## Documentation
-Please check out our [documentation site.](https://redhawk989.github.io/EyeTrackVR/)
+Please check out our [documentation site.](https://docs.eyetrackvr.dev/)
 
 
 
 ## Hardware
 
 3d files for mounting brackets will be found [here](https://github.com/RedHawk989/EyeTrackVR-Hardware)
-IR emitter files are also located there. For more info please reference our [documentation site](https://redhawk989.github.io/EyeTrackVR/parts-list/)
+IR emitter files are also located there. For more info please reference our [documentation site](https://docs.eyetrackvr.dev/how_to_build/parts_list)
 
 
 
@@ -45,7 +43,7 @@ Current work has been with our official firmware by `lorow`, found [here](https:
 
 ## Headset support
 
-Any headset that can fit the camera and LEDs can likely be supported, however, mounts may not have been made for it. Please reference to our [parts list](https://redhawk989.github.io/EyeTrackVR/parts-list/#other-parts) for details.
+Any headset that can fit the camera and LEDs can likely be supported, however, mounts may not have been made for it. Please reference to our [parts list](https://docs.eyetrackvr.dev/how_to_build/parts_list#_3d-printed-mounts) for details.
 
 
 ## About IR Emitter Safety
