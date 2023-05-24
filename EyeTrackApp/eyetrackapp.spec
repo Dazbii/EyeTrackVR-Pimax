@@ -1,4 +1,4 @@
-# -*- mode: py -3.11 ; coding: utf-8 -*-
+# -*- mode: py -3.10 ; coding: utf-8 -*-
 
 block_cipher = None
 
@@ -6,7 +6,7 @@ block_cipher = None
 a = Analysis(['eyetrackapp.py'],
              pathex=[],
              binaries=[],
-             datas=[("Audio/*", "Audio"), ("Images/*", "Images/"), ("pye3d/refraction_models/*", "pye3d/refraction_models/")],
+             datas=[("Audio/*", "Audio"), ("Images/*", "Images/"), ("pye3d/refraction_models/*", "pye3d/refraction_models/"), ("Models/*", "Models/")],
              hiddenimports=['cv2', 'numpy', 'PySimpleGui'],
              hookspath=[],
              hooksconfig={},
