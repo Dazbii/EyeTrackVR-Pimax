@@ -22,13 +22,6 @@ width = 320
 height = 240
 fps = 120
 
-hwnd1 = None
-hwnd2 = None
-saveDC1 = None
-saveDC2 = None
-saveBitMap1 = None 
-saveBitMap2 = None
-
 borderLeft = 0
 borderTop = 0
 borderRight = 0
@@ -63,7 +56,7 @@ def hook_window(name):
     saveBitMap.CreateCompatibleBitmap(mfcDC, w, h)
 
     saveDC.SelectObject(saveBitMap)
-    return hwnd, saveDC, saveBitMap
+    return hwnd, saveDC, saveBitMap, hwndDC, mfcDC
 
 def hook_eye_window(index):
     window_name = "draw Image1"
@@ -114,11 +107,19 @@ class Camera:
         self.cancellation_event = cancellation_event
         self.current_capture_source = config.capture_source
         self.error_message = "Capture source {} not found, retrying"
-        self.hwnd, self.saveDC, self.saveBitMap = (None, None, None)
+        self.hwnd, self.saveDC, self.saveBitMap, self.hwndDC, self.mfcDC = (None, None, None, None, None)
         self.windows_hooked = False
         self.frame_number = 0
         self.fps = fps
         self.bps = 442368
+
+    def unhook(self):
+        if self.windows_hooked:
+            win32gui.DeleteObject(self.saveBitMap.GetHandle())
+            self.saveDC.DeleteDC()
+            self.mfcDC.DeleteDC()
+            win32gui.ReleaseDC(self.hwnd, self.hwndDC)
+            self.windows_hooked = False
 
     def set_output_queue(self, camera_output_outgoing: "queue.Queue"):
         self.camera_output_outgoing = camera_output_outgoing
@@ -127,6 +128,7 @@ class Camera:
         while True:
             if self.cancellation_event.is_set():
                 print("Exiting capture thread")
+                self.unhook()
                 return
             should_push = True
             # If things aren't open, retry until they are. Don't let read requests come in any earlier
@@ -146,7 +148,7 @@ class Camera:
             #             return
             #         self.current_capture_source = self.config.capture_source
             #         self.wired_camera = cv2.VideoCapture(self.current_capture_source)
-                    self.hwnd, self.saveDC, self.saveBitMap = hook_eye_window(self.config.capture_source)
+                    self.hwnd, self.saveDC, self.saveBitMap, self.hwndDC, self.mfcDC = hook_eye_window(self.config.capture_source)
                     self.windows_hooked = True
                     self.current_capture_source = self.config.capture_source
                     get_image(self.hwnd, self.saveDC, self.saveBitMap)
