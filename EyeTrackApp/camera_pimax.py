@@ -176,6 +176,8 @@ class Camera:
             if should_push:
                 # For some reason, calling get_image twice will prevent the video feeds from slowing down in dual-eye
                 get_image(self.hwnd, self.saveDC, self.saveBitMap)
+                get_image(self.hwnd, self.saveDC, self.saveBitMap)
+                get_image(self.hwnd, self.saveDC, self.saveBitMap)
                 image = get_image(self.hwnd, self.saveDC, self.saveBitMap)
                 scale_percent = 100
                 width = int(image.shape[1] * scale_percent / 100)
