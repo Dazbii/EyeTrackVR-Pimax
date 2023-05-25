@@ -33,6 +33,7 @@ def hook_window(name):
     global borderRight
     global borderBot
     hwnd = win32gui.FindWindow(None, name)
+    windll.user32.SetProcessDPIAware()
 
     clientLeft, clientTop, clientRight, clientBot = win32gui.GetClientRect(hwnd)
     clientLeft, clientTop = win32gui.ClientToScreen(hwnd, (clientLeft, clientTop))
@@ -173,8 +174,10 @@ class Camera:
     def get_wired_camera_picture(self, should_push):
         try:
             if should_push:
+                # For some reason, calling get_image twice will prevent the video feeds from slowing down in dual-eye
+                get_image(self.hwnd, self.saveDC, self.saveBitMap)
                 image = get_image(self.hwnd, self.saveDC, self.saveBitMap)
-                scale_percent = 75
+                scale_percent = 100
                 width = int(image.shape[1] * scale_percent / 100)
                 height = int(image.shape[0] * scale_percent / 100)
                 shrunk_image = cv2.resize(image, (width, height), interpolation=cv2.INTER_AREA)
