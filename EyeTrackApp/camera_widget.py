@@ -6,7 +6,7 @@ from threading import Event, Thread
 from eye_processor import EyeProcessor, EyeInfoOrigin
 from enum import Enum
 from queue import Queue, Empty
-from camera import Camera, CameraState
+from camera_pimax import Camera, CameraState
 from osc import EyeId
 import cv2
 import sys

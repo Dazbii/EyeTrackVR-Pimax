@@ -22,6 +22,10 @@ winotify = [
 onnxruntime = "^1.13.1"
 colorama = "^0.4.6"
 taskipy = "^1.10.4"
+scipy = "^1.9.3"
+Pillow = "^9.3.0"
+pywin32 = "^306"
+
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
 pyinstaller = "^5.6.2"
@@ -33,8 +37,3 @@ dev = "python eyetrackapp.py"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.black]
-line-length = 135
-exclude = "(.git|.env|venv)"
-target-version = ["py310","py311"]
