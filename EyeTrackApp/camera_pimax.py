@@ -1,15 +1,9 @@
-from time import sleep
-
 import numpy
 
 from config import EyeTrackConfig
-import requests
 from enum import Enum
 import threading
 import queue
-import runpy
-import cv2
-import time
 
 import win32gui
 import win32ui
@@ -150,12 +144,15 @@ class Camera:
             #             return
             #         self.current_capture_source = self.config.capture_source
             #         self.wired_camera = cv2.VideoCapture(self.current_capture_source)
-                    self.hwnd, self.saveDC, self.saveBitMap, self.hwndDC, self.mfcDC = hook_eye_window(self.config.capture_source)
-                    self.windows_hooked = True
-                    self.current_capture_source = self.config.capture_source
-                    get_image(self.hwnd, self.saveDC, self.saveBitMap)
-                    self.frame_number += 1    
-                    should_push = False
+                    try:
+                        self.hwnd, self.saveDC, self.saveBitMap, self.hwndDC, self.mfcDC = hook_eye_window(self.config.capture_source)
+                        self.windows_hooked = True
+                        self.current_capture_source = self.config.capture_source
+                        get_image(self.hwnd, self.saveDC, self.saveBitMap)
+                        self.frame_number += 1    
+                        should_push = False
+                    except Exception as e:
+                         pass
             # else:
             #     # We don't have a capture source to try yet, wait for one to show up in the GUI.
             #     if self.cancellation_event.wait(WAIT_TIME):
@@ -176,12 +173,12 @@ class Camera:
         try:
             if should_push:
                 image = get_image(self.hwnd, self.saveDC, self.saveBitMap)
-                scale_percent = 100
-                width = int(image.shape[1] * scale_percent / 100)
-                height = int(image.shape[0] * scale_percent / 100)
-                shrunk_image = cv2.resize(image, (width, height), interpolation=cv2.INTER_AREA)
+                # scale_percent = 100
+                # width = int(image.shape[1] * scale_percent / 100)
+                # height = int(image.shape[0] * scale_percent / 100)
+                # shrunk_image = cv2.resize(image, (width, height), interpolation=cv2.INTER_AREA)
                 self.frame_number += 1
-                self.push_image_to_queue(shrunk_image, self.frame_number, fps)
+                self.push_image_to_queue(image, self.frame_number, fps)
         except Exception as e:
             print(
                 "Capture source problem, assuming camera disconnected, waiting for reconnect."
