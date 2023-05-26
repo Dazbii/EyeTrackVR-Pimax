@@ -65,11 +65,13 @@ def hook_eye_window(index):
         window_name = "draw Image2"
 
     return hook_window(window_name)
-    # hwnd, saveDC, saveBitMap = hook_window("draw Image2")
-
 
 def get_image(hwnd, saveDC, saveBitMap):
-    result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 0)
+    # - The last parameter controls flags. If I say 0 or 1 it lags when capturing both eyes. 
+    #   I can avoid this by calling PrintWindow multiple times (4 seems to do the trick) for some reason
+    # - It also seems to work if I call it with a value of 2. Not sure what this actually is,
+    #   I think it might be PW_RENDERFULLCONTENT? Still not sure why that would fix it
+    windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 2)
 
     bmpinfo = saveBitMap.GetInfo()
     bmpstr = saveBitMap.GetBitmapBits(True)
@@ -86,7 +88,6 @@ class CameraState(Enum):
     CONNECTING = 0
     CONNECTED = 1
     DISCONNECTED = 2
-
 
 class Camera:
     def __init__(
@@ -174,10 +175,6 @@ class Camera:
     def get_wired_camera_picture(self, should_push):
         try:
             if should_push:
-                # For some reason, calling get_image twice will prevent the video feeds from slowing down in dual-eye
-                get_image(self.hwnd, self.saveDC, self.saveBitMap)
-                get_image(self.hwnd, self.saveDC, self.saveBitMap)
-                get_image(self.hwnd, self.saveDC, self.saveBitMap)
                 image = get_image(self.hwnd, self.saveDC, self.saveBitMap)
                 scale_percent = 100
                 width = int(image.shape[1] * scale_percent / 100)
