@@ -65,6 +65,7 @@ class EyeTrackSettingsConfig(BaseModel):
     gui_vrc_native: bool = True
     gui_circular_crop_right: bool = False
     gui_circular_crop_left: bool = False
+    gui_video_scale: int = 100
 
 
 class EyeTrackConfig(BaseModel):

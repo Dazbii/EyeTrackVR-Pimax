@@ -43,6 +43,7 @@ class SettingsWidget:
         self.gui_circular_crop_right = f"-CIRCLECROPRIGHT{widget_id}-"
         self.gui_update_check = f"-UPDATECHECK{widget_id}-"
         self.gui_threshold_slider = f"-BLOBTHRESHOLD{widget_id}-"
+        self.gui_video_scale = f"-VIDEOSCALE{widget_id}-"
         self.main_config = main_config
         self.config = main_config.settings
         self.osc_queue = osc_queue
@@ -97,6 +98,17 @@ class SettingsWidget:
                     key=self.gui_update_check,
                     background_color='#424042',
                     tooltip = "Toggle update check on launch.",
+                ),
+            ],
+            [
+                sg.Text("Video Scaling:", background_color='#424042'),
+                sg.Slider(
+                    range=(5, 100),
+                    default_value=self.config.gui_video_scale,
+                    orientation="h",
+                    key=self.gui_video_scale,
+                    background_color='#424042',
+                    tooltip = "The Percentage to downscale the pimax video feeds to. 100 being full-res",
                 ),
             ],
             [
@@ -273,6 +285,10 @@ class SettingsWidget:
         
         if self.config.gui_update_check != values[self.gui_update_check]:
             self.config.gui_update_check = values[self.gui_update_check]
+            changed = True
+
+        if self.config.gui_video_scale != values[self.gui_video_scale]:
+            self.config.gui_video_scale = int(values[self.gui_video_scale])
             changed = True
 
         if self.config.gui_flip_y_axis != values[self.gui_flip_y_axis]:

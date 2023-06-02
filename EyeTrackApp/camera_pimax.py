@@ -1,4 +1,5 @@
 import numpy
+import cv2
 
 from config import EyeTrackConfig
 from enum import Enum
@@ -92,6 +93,7 @@ class Camera:
         capture_event: "threading.Event",
         camera_status_outgoing: "queue.Queue[CameraState]",
         camera_output_outgoing: "queue.Queue",
+        settings: int,
     ):
         self.camera_status = CameraState.CONNECTING
         self.config = config
@@ -102,6 +104,7 @@ class Camera:
         self.capture_event = capture_event
         self.cancellation_event = cancellation_event
         self.current_capture_source = config.capture_source
+        self.settings = settings
         self.error_message = "Capture source {} not found, retrying"
         self.hwnd, self.saveDC, self.saveBitMap, self.hwndDC, self.mfcDC = (None, None, None, None, None)
         self.windows_hooked = False
@@ -173,10 +176,10 @@ class Camera:
         try:
             if should_push:
                 image = get_image(self.hwnd, self.saveDC, self.saveBitMap)
-                # scale_percent = 100
-                # width = int(image.shape[1] * scale_percent / 100)
-                # height = int(image.shape[0] * scale_percent / 100)
-                # shrunk_image = cv2.resize(image, (width, height), interpolation=cv2.INTER_AREA)
+                if (self.settings.gui_video_scale != 100): 
+                    width = int(image.shape[1] * self.settings.gui_video_scale / 100)
+                    height = int(image.shape[0] * self.settings.gui_video_scale / 100)
+                    image = cv2.resize(image, (width, height), interpolation=cv2.INTER_AREA)
                 self.frame_number += 1
                 self.push_image_to_queue(image, self.frame_number, fps)
         except Exception as e:
