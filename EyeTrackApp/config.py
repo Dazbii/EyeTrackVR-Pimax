@@ -37,6 +37,8 @@ class EyeTrackSettingsConfig(BaseModel):
     gui_HSRAC: bool = True
     gui_DADDY: bool = False
     gui_HSF_radius: int = 15
+    gui_HSF_radius_left: int = 10
+    gui_HSF_radius_right: int = 10
     gui_min_cutoff: str = "0.0004"
     gui_speed_coefficient: str = "0.9"
     gui_osc_address: str = "127.0.0.1"
@@ -70,6 +72,7 @@ class EyeTrackConfig(BaseModel):
     right_eye: EyeTrackCameraConfig = EyeTrackCameraConfig()
     left_eye: EyeTrackCameraConfig = EyeTrackCameraConfig()
     settings: EyeTrackSettingsConfig = EyeTrackSettingsConfig()
+  #  algo_settings: EyeTrackSettingsConfig = EyeTrackSettingsConfig()
     eye_display_id: EyeId = EyeId.RIGHT
 
     @staticmethod
@@ -91,7 +94,7 @@ class EyeTrackConfig(BaseModel):
                 except json.JSONDecodeError:
                     pass
             if load_config is None:
-                print("using base settings")
+                print("[INFO] using base settings")
                 load_config = EyeTrackConfig()
             return load_config
 

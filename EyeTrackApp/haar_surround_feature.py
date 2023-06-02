@@ -3,11 +3,16 @@ from functools import lru_cache
 
 import cv2
 import numpy as np
-
-
 from utils.misc_utils import clamp
 from utils.img_utils import safe_crop
+from enum import IntEnum
 
+
+class EyeId(IntEnum):
+    RIGHT = 0
+    LEFT = 1
+    BOTH = 2
+    SETTINGS = 3
 
 # from line_profiler_pycharm import profile
 
@@ -476,7 +481,7 @@ class HSF_cls(object):
         self.blink_detector = BlinkDetector()
         self.center_q1 = BlinkDetector()
         self.center_correct = CenterCorrection()
-        
+
         self.cap = None
         
         self.timedict = {"to_gray": [], "int_img": [], "conv_int": [], "crop": [], "total_cv": []}
@@ -499,10 +504,15 @@ class HSF_cls(object):
             self.current_image_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             return True
         return False
-    
+
+    cct = 300
+    ransac_lower_x = 100
+    ransac_lower_y = 100
+    cx = 0
+    cy = 0
+
     def single_run(self):
         # Temporary implementation to run
-
 
         ## default_radius = 14
         
@@ -634,8 +644,8 @@ class HSF_cls(object):
                         #            zip([1, 0, 1, 0], [lower_x, lower_y, upper_x, upper_y])]  # debug code
                         
             # if imshow_enable or save_video:
-            #    cv2.circle(frame, (orig_x, orig_y), 6, (0, 0, 255), -1)
-            #   cv2.circle(frame, (center_x, center_y), 3, (255, 0, 0), -1)
+                cv2.circle(frame, (orig_x, orig_y), 6, (0, 0, 255), -1)
+                cv2.circle(frame, (center_x, center_y), 3, (255, 0, 0), -1)
 
         # If you want to update response_max. it may be more cost-effective to rewrite response_list in the following way
         # https://stackoverflow.com/questions/42771110/fastest-way-to-left-cycle-a-numpy-array-like-pop-push-for-a-queue
@@ -669,10 +679,10 @@ class HSF_cls(object):
             else:
                 self.now_modeo = self.cv_modeo[1]
 
-                
+
         # debug code
         # return center_x,center_y,cropbox,frame
-        return center_x, center_y, frame
+        return center_x, center_y, frame, radius
 
 class External_Run_HSF(object):
     def __init__(self, skip_autoradius_flg=False, radius=20):
@@ -689,8 +699,8 @@ class External_Run_HSF(object):
         # debug code
         # center_x, center_y,cropbox, frame = self.algo.single_run()
         # return center_x, center_y,cropbox, frame
-        center_x, center_y, frame = self.algo.single_run()
-        return center_x, center_y, frame
+        center_x, center_y, frame, radius = self.algo.single_run()
+        return center_x, center_y, frame, radius
 
 
 

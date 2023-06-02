@@ -27,7 +27,14 @@ Copyright (c) 2023 EyeTrackVR <3
 '''  
 import cv2
 import numpy as np
-from enums import EyeLR
+from enum import IntEnum
+from utils.img_utils import safe_crop
+from utils.misc_utils import clamp
+class EyeId(IntEnum):
+    RIGHT = 0
+    LEFT = 1
+    BOTH = 2
+    SETTINGS = 3
 
 
 def ellipse_model(data, y, f):
@@ -135,60 +142,47 @@ def fit_rotated_ellipse(data, P):
     
     return (cx, cy, w, h, theta)
 
+cct = 300
+ransac_lower_x = 100
+ransac_lower_y = 100
+cx = 0
+cy = 0
 
-def circle_crop(self):
-    if self.cct == 0:
-        try:
-            ht, wd = self.current_image_gray.shape[:2]
-            radius = int(float(self.lkg_projected_sphere["axes"][0]))
-            self.xc = int(float(self.lkg_projected_sphere["center"][0]))
-            self.yc = int(float(self.lkg_projected_sphere["center"][1]))
-            if radius < 8: #minimum size TODO: make shure this size is enough
-                radius = 8
-            # draw filled circle in white on black background as mask
-            mask = np.zeros((ht, wd), dtype=np.uint8)
-            mask = cv2.circle(mask, (self.xc, self.yc), radius, 255, -1)
-            # create white colored background
-            color = np.full_like(self.current_image_gray, (255))
-            # apply mask to image
-            masked_img = cv2.bitwise_and(self.current_image_gray, self.current_image_gray, mask=mask)
-            # apply inverse mask to colored image
-            masked_color = cv2.bitwise_and(color, color, mask=255 - mask)
-            # combine the two masked images
-            self.current_image_gray = cv2.add(masked_img, masked_color)
-        except:
-            pass
-    else:
-        self.cct = self.cct - 1
 
-def RANSAC3D(self): 
+def RANSAC3D(self, hsrac_en):
     f = False
+    global cct, ransac_lower_y, ransac_lower_x, cx, cy
+
+
+    if hsrac_en:
+        ransac_upper_x = self.rawx + max(15, self.radius)
+        ransac_lower_x = self.rawx - max(15, self.radius)
+        ransac_upper_y = self.rawy + max(15, self.radius)
+        ransac_lower_y = self.rawy - max(15, self.radius)
+
+        frame = safe_crop(self.current_image_gray_clean, ransac_lower_x, ransac_lower_y, ransac_upper_x, ransac_upper_y, 1)
+
+    else:
+        frame = self.current_image_gray_clean
+
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
     thresh_add = 10
     rng = np.random.default_rng()
-
+    newFrame2 = self.current_image_gray.copy()
     # Convert the image to grayscale, and set up thresholding. Thresholds here are basically a
     # low-pass filter that will set any pixel < the threshold value to 0. Thresholding is user
     # configurable in this utility as we're dealing with variable lighting amounts/placement, as
-    # well as camera positioning and lensing. Therefore everyone's cutoff may be different.
+    # well as camera positioning and lensing. Therefore, everyone's cutoff may be different.
     #
     # The goal of thresholding settings is to make sure we can ONLY see the pupil. This is why we
     # crop the image earlier; it gives us less possible dark area to get confused about in the
     # next step.
 
-    if self.eye_id == EyeId.LEFT and self.config.gui_circular_crop_left == True: #TODO TEST function
-        circle_crop(self)
-    else:
-        self.cct = 300
 
-    if self.eye_id == EyeId.RIGHT and self.config.gui_circular_crop_right == True:
-        circle_crop(self)
-    else:
-        self.cct = 300
     
     # Crop first to reduce the amount of data to process.
-    newFrame2 = self.current_image_gray.copy()
-    frame = self.current_image_gray
+
+   # frame = self.current_image_gray
     # For measuring processing time of image processing
     # Crop first to reduce the amount of data to process.
     # frame = frame[0:len(frame) - 5, :]
@@ -288,12 +282,26 @@ def RANSAC3D(self):
         eym = ellipse_3d["center"][1]
 
         d = result_3d["diameter_3d"]
+        self.cc_radius = int(float(self.lkg_projected_sphere["axes"][0]))
+        self.xc = int(float(self.lkg_projected_sphere["center"][0]))
+        self.yc = int(float(self.lkg_projected_sphere["center"][1]))
 
     except:
         f = True
     # Draw our image and stack it for visual output
+    if hsrac_en:
+        csy = newFrame2.shape[0]
+        csx = newFrame2.shape[1]
+
+        ransac_xy_offset = (ransac_lower_x, ransac_lower_y)
+        # cx = clamp((cx - 20) + center_x, 0, csx)
+        # cy = clamp((cy - 20) + center_y, 0, csy)
+        cx = int(clamp(cx + ransac_xy_offset[0], 0, csx))
+        cy = int(clamp(cy + ransac_xy_offset[1], 0, csy))
+
+
     try:
-        cv2.drawContours(self.current_image_gray, contours, -1, (255, 0, 0), 1)
+        cv2.drawContours(self.current_image_gray, contours, -1, (255, 0, 0), 1) # TODO: fix visualizations with HSRAC
         cv2.circle(self.current_image_gray, (int(cx), int(cy)), 2, (0, 0, 255), -1)
     except:
         pass
@@ -316,7 +324,7 @@ def RANSAC3D(self):
     try:
         # print(self.lkg_projected_sphere["angle"], self.lkg_projected_sphere["axes"], self.lkg_projected_sphere["center"])
         cv2.ellipse(
-            self.current_image_gray,
+            newFrame2,
             tuple(int(v) for v in self.lkg_projected_sphere["center"]),
             tuple(int(v) for v in self.lkg_projected_sphere["axes"]),
             self.lkg_projected_sphere["angle"],
@@ -332,10 +340,15 @@ def RANSAC3D(self):
             #   tuple(int(v) for v in ellipse_3d["center"]),
             #  (0, 255, 0),  # color (BGR): red
         # )
-    
+
     except:
         pass
-    
+
+
+
+    self.current_image_gray = newFrame2
+    y, x = self.current_image_gray.shape
+    thresh = cv2.resize(thresh, (x,y))
     try:   
         self.failed = 0 # we have succeded, continue with this
         return cx, cy, thresh
