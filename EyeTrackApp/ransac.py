@@ -142,6 +142,23 @@ def fit_rotated_ellipse(data, P):
     
     return (cx, cy, w, h, theta)
 
+
+
+def get_center_noclamp(center_xy, radius):
+    center_x, center_y = center_xy
+    upper_x = center_x + radius
+    lower_x = center_x - radius
+    upper_y = center_y + radius
+    lower_y = center_y - radius
+
+    ransac_upper_x = center_x + max(20, radius)
+    ransac_lower_x = center_x - max(20, radius)
+    ransac_upper_y = center_y + max(20, radius)
+    ransac_lower_y = center_y - max(20, radius)
+    ransac_xy_offset = (ransac_lower_x, ransac_lower_y)
+    return center_x, center_y, upper_x, lower_x, upper_y, lower_y, ransac_lower_x, ransac_lower_y, ransac_upper_x, ransac_upper_y, ransac_xy_offset
+
+
 cct = 300
 ransac_lower_x = 100
 ransac_lower_y = 100
@@ -151,14 +168,13 @@ cy = 0
 
 def RANSAC3D(self, hsrac_en):
     f = False
+    ranf = False
     global cct, ransac_lower_y, ransac_lower_x, cx, cy
 
 
     if hsrac_en:
-        ransac_upper_x = self.rawx + max(15, self.radius)
-        ransac_lower_x = self.rawx - max(15, self.radius)
-        ransac_upper_y = self.rawy + max(15, self.radius)
-        ransac_lower_y = self.rawy - max(15, self.radius)
+        center_x, center_y, upper_x, lower_x, upper_y, lower_y, ransac_lower_x, ransac_lower_y, ransac_upper_x, ransac_upper_y, ransac_xy_offset = get_center_noclamp(
+            (self.rawx, self.rawy), self.radius)
 
         frame = safe_crop(self.current_image_gray_clean, ransac_lower_x, ransac_lower_y, ransac_upper_x, ransac_upper_y, 1)
 
@@ -166,7 +182,7 @@ def RANSAC3D(self, hsrac_en):
         frame = self.current_image_gray_clean
 
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    thresh_add = 10
+
     rng = np.random.default_rng()
     newFrame2 = self.current_image_gray.copy()
     # Convert the image to grayscale, and set up thresholding. Thresholds here are basically a
@@ -199,7 +215,7 @@ def RANSAC3D(self, hsrac_en):
     # frame_gray = frame_gray[max_loc[1] - maxloc1_hf:max_loc[1] + maxloc1_hf,
         #               max_loc[0] - maxloc0_hf:max_loc[0] + maxloc0_hf]
     
-    threshold_value = min_val + thresh_add
+    threshold_value = min_val + self.settings.gui_thresh_add
     _, thresh = cv2.threshold(frame_gray, threshold_value, 255, cv2.THRESH_BINARY)
     try:
         opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
@@ -233,13 +249,14 @@ def RANSAC3D(self, hsrac_en):
         # print(cx, cy)
         #cxi, cyi, wi, hi = int(cx), int(cy), int(w), int(h)
         
-        cv2.drawContours(self.current_image_gray, contours, -1, (255, 0, 0), 1)
-        cv2.circle(self.current_image_gray, (cx, cy), 2, (0, 0, 255), -1)
+        #cv2.drawContours(self.current_image_gray, contours, -1, (255, 0, 0), 1)
+       # cv2.circle(self.current_image_gray, (cx, cy), 2, (0, 0, 255), -1)
         # cx1, cy1, w1, h1, theta1 = fit_rotated_ellipse(maxcnt.reshape(-1, 2))
-        cv2.ellipse(self.current_image_gray, (cx, cy), (w, h), theta * 180.0 / np.pi, 0.0, 360.0, (50, 250, 200), 1, )
+       # cv2.ellipse(self.current_image_gray, (cx, cy), (w, h), theta * 180.0 / np.pi, 0.0, 360.0, (50, 250, 200), 1, )
 
     #img = newImage2[y1:y2, x1:x2]
     except:
+        ranf = True
         pass
 
     self.current_image_gray = frame
@@ -288,16 +305,17 @@ def RANSAC3D(self, hsrac_en):
 
     except:
         f = True
-    # Draw our image and stack it for visual output
     if hsrac_en:
         csy = newFrame2.shape[0]
         csx = newFrame2.shape[1]
 
-        ransac_xy_offset = (ransac_lower_x, ransac_lower_y)
-        # cx = clamp((cx - 20) + center_x, 0, csx)
-        # cy = clamp((cy - 20) + center_y, 0, csy)
-        cx = int(clamp(cx + ransac_xy_offset[0], 0, csx))
-        cy = int(clamp(cy + ransac_xy_offset[1], 0, csy))
+        if ranf:
+            cx = self.rawx
+            cy = self.rawy
+        else:
+      #  print(int(cx), int(clamp(cx + ransac_lower_x, 0, csx)), ransac_lower_x, csx, "y", int(cy), int(clamp(cy + ransac_lower_y, 0, csy)), ransac_lower_y, csy)
+            cx = int(clamp(cx + ransac_lower_x, 0, csx)) #dunno why this is being weird
+            cy = int(clamp(cy + ransac_lower_y, 0, csy))
 
 
     try:
