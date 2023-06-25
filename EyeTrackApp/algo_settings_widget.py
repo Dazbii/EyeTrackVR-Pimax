@@ -21,6 +21,8 @@ class AlgoSettingsWidget:
         self.gui_HSF = f"-HSF{widget_id}-"
         self.gui_DADDY = f"-DADDY{widget_id}-"
         self.gui_DADDYP = f"-DADDYP{widget_id}-"
+        self.gui_MOMMYP = f"-MOMMYP{widget_id}-"
+        self.gui_MOMMY = f"-MOMMY{widget_id}-"
         self.gui_RANSAC3D = f"-RANSAC3D{widget_id}-"
         self.gui_BLINK = f"-BLINK{widget_id}-"
         self.gui_IBO = f"-IBO{widget_id}-"
@@ -45,6 +47,9 @@ class AlgoSettingsWidget:
         self.gui_threshold_slider = f"-BLOBTHRESHOLD{widget_id}-"
         self.gui_HSF_radius_left = f"-HSFRADIUSLEFT{widget_id}-"
         self.gui_HSF_radius_right = f"-HSFRADIUSRIGHT{widget_id}-"
+        self.ibo_filter_samples = f"-IBOFILTERSAMPLE{widget_id}-"
+        self.calibration_samples = f"-CALIBRATIONSAMPLES{widget_id}-"
+        self.ibo_fully_close_eye_threshold = f"-CLOSETHRESH{widget_id}-"
         self.main_config = main_config
         self.config = main_config.settings
         self.osc_queue = osc_queue
@@ -130,6 +135,24 @@ class AlgoSettingsWidget:
             [
                 sg.Checkbox(
                     "",
+                    default=self.config.gui_MOMMY,
+                    key=self.gui_MOMMY,
+                    background_color='#424042',
+                    tooltip="MOMMY Uses a lightweight Deep learning algorithm.",
+                ),
+                    sg.Combo(['1', '2', '3', '4', '5'],
+                             default_value=self.config.gui_MOMMYP,
+                             key=self.gui_MOMMYP,
+                             background_color='#424042',
+                             text_color='white',
+                             button_arrow_color="black",
+                             button_background_color="#6f4ca1",
+                             tooltip="Select the priority of eyetracking algorithims.",
+                             ),
+                    sg.Text("MOMMY", background_color='#424042'),
+
+                sg.Checkbox(
+                    "",
                     default=self.config.gui_BLOB,
                     key=self.gui_BLOB,
                     background_color='#424042',
@@ -147,6 +170,9 @@ class AlgoSettingsWidget:
                 sg.Text("Blob", background_color='#424042'),
             ],
             [
+            sg.Text("Blink Algo Settings:", background_color='#242224')
+            ],
+            [
                 sg.Checkbox(
                     "Intensity Based Openness",
                     default=self.config.gui_IBO,
@@ -158,6 +184,29 @@ class AlgoSettingsWidget:
                     default=self.config.gui_BLINK,
                     key=self.gui_BLINK,
                     background_color='#424042',
+                ),
+
+                
+            ],
+            [
+                sg.Text("IBO Filter Sample Size", background_color='#424042'),
+                sg.InputText(
+                    self.config.ibo_filter_samples,
+                    key=self.ibo_filter_samples,
+                    size=(0,10),
+                ),
+                sg.Text("Calibration Samples", background_color='#424042'),
+                sg.InputText(
+                    self.config.calibration_samples,
+                    key=self.calibration_samples,
+                    size=(0,10),
+                ),
+
+                sg.Text("IBO Close Threshold", background_color='#424042'),
+                sg.InputText(
+                    self.config.ibo_fully_close_eye_threshold,
+                    key=self.ibo_fully_close_eye_threshold,
+                    size=(0,10),
                 ),
             ],
                         [
@@ -174,7 +223,9 @@ class AlgoSettingsWidget:
                     background_color='#424042',
                 ),
             ],
-        
+            [
+            sg.Text("Advanced Tracking Algorithim Settings:", background_color='#242224')
+            ],
             [sg.Checkbox(
                     "HSF: Skip Auto Radius",
                     default=self.config.gui_skip_autoradius,
@@ -255,7 +306,7 @@ class AlgoSettingsWidget:
         
         self.widget_layout = [
             [   
-                sg.Text("Tracking Algorithm Settings:", background_color='#242224'),
+                sg.Text("Tracking Algorithm Order Settings:", background_color='#242224'),
             ],
             [
                 sg.Column(self.general_settings_layout, key=self.gui_general_settings_layout, background_color='#424042' ),
@@ -318,6 +369,15 @@ class AlgoSettingsWidget:
             self.config.gui_HSRAC = values[self.gui_HSRAC]
             changed = True
 
+        if self.config.gui_MOMMYP != int(values[self.gui_MOMMYP]):
+            self.config.gui_MOMMYP = int(values[self.gui_MOMMYP])
+            changed = True
+
+        if self.config.gui_MOMMY != values[self.gui_MOMMY]:
+            self.config.gui_MOMMY = values[self.gui_MOMMY]
+            changed = True
+
+
         if self.config.gui_skip_autoradius != values[self.gui_skip_autoradius]:
             self.config.gui_skip_autoradius = values[self.gui_skip_autoradius]
             changed = True
@@ -364,6 +424,18 @@ class AlgoSettingsWidget:
 
         if self.config.gui_blob_maxsize != values[self.gui_blob_maxsize]:
             self.config.gui_blob_maxsize = values[self.gui_blob_maxsize]
+            changed = True
+
+        if self.config.ibo_filter_samples != int(values[self.ibo_filter_samples]):
+            self.config.ibo_filter_samples = int(values[self.ibo_filter_samples])
+            changed = True
+
+        if self.config.ibo_fully_close_eye_threshold != float(values[self.ibo_fully_close_eye_threshold]):
+            self.config.ibo_fully_close_eye_threshold = float(values[self.ibo_fully_close_eye_threshold])
+            changed = True
+
+        if self.config.calibration_samples != int(values[self.calibration_samples]):
+            self.config.calibration_samples = int(values[self.calibration_samples])
             changed = True
 
         if changed:

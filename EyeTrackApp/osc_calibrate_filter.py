@@ -12,6 +12,12 @@ class EyeId(IntEnum):
 
 class cal():
     def cal_osc(self, cx, cy):
+        if cx == None or cy == None:
+            return 0, 0
+        if cx == 0:
+            cx = 1
+        if cy == 0:
+            cy = 1
         if self.eye_id == EyeId.RIGHT:
             flipx = self.settings.gui_flip_x_axis_right
         else:
@@ -20,6 +26,7 @@ class cal():
             self.calibration_frame_counter = None
             self.config.calib_XOFF = cx
             self.config.calib_YOFF = cy
+            self.baseconfig.save()
             PlaySound('Audio/completed.wav', SND_FILENAME | SND_ASYNC)
         if self.calibration_frame_counter == self.settings.calibration_samples:
             self.config.calib_XMAX = -69420
@@ -39,6 +46,7 @@ class cal():
                 self.config.calib_YMAX = cy
             if cy < self.config.calib_YMIN:
                 self.config.calib_YMIN = cy
+
             self.calibration_frame_counter -= 1
 
         if self.settings.gui_recenter_eyes == True:
@@ -52,20 +60,38 @@ class cal():
         else:
             self.ts = 10
 
-        try:
-            out_x = 0.5
-            out_y = 0.5
+        out_x = 0.5
+        out_y = 0.5
+
+        if self.config.calib_XMAX != None and self.config.calib_XOFF != None:
+
+            calib_diff_x_MAX = self.config.calib_XMAX - self.config.calib_XOFF
+            if calib_diff_x_MAX == 0:
+                calib_diff_x_MAX = 1
+
+            calib_diff_x_MIN = self.config.calib_XMIN - self.config.calib_XOFF
+            if calib_diff_x_MIN == 0:
+                calib_diff_x_MIN = 1
+
+            calib_diff_y_MAX = self.config.calib_YMAX - self.config.calib_YOFF
+            if calib_diff_y_MAX == 0:
+                calib_diff_y_MAX = 1
+
+            calib_diff_y_MIN = self.config.calib_YMIN - self.config.calib_YOFF
+            if calib_diff_y_MIN == 0:
+                calib_diff_y_MIN = 1
+
             xl = float(
-                (cx - self.config.calib_XOFF) / (self.config.calib_XMAX - self.config.calib_XOFF)
+                (cx - self.config.calib_XOFF) / calib_diff_x_MAX
             )
             xr = float(
-                (cx - self.config.calib_XOFF) / (self.config.calib_XMIN - self.config.calib_XOFF)
+                (cx - self.config.calib_XOFF) / calib_diff_x_MIN
             )
             yu = float(
-                (cy - self.config.calib_YOFF) / (self.config.calib_YMIN - self.config.calib_YOFF)
+                (cy - self.config.calib_YOFF) / calib_diff_y_MIN
             )
             yd = float(
-                (cy - self.config.calib_YOFF) / (self.config.calib_YMAX - self.config.calib_YOFF)
+                (cy - self.config.calib_YOFF) / calib_diff_y_MAX
             )
 
             if self.settings.gui_flip_y_axis:  # check config on flipped values settings and apply accordingly
@@ -79,7 +105,7 @@ class cal():
                 if yu > 0:
                     out_y = max(0.0, min(1.0, yu))
 
-            if flipx:  
+            if flipx:
                 if xr >= 0:
                     out_x = -abs(max(0.0, min(1.0, xr)))
                 if xl > 0:
@@ -89,21 +115,17 @@ class cal():
                     out_x = max(0.0, min(1.0, xr))
                 if xl > 0:
                     out_x = -abs(max(0.0, min(1.0, xl)))
-        except:
-          #  print("\033[91m[ERROR] Eye Calibration Invalid!\033[0m")
-            self.config.calib_XOFF = 0
-            self.config.calib_YOFF = 0
-            self.config.calib_XMAX = 1
-            self.config.calib_YMAX = 1
-            self.config.calib_XMIN = 1
-            self.config.calib_YMIN = 1
-            out_x = 0.5
-            out_y = 0.5
-        try:
-            noisy_point = np.array([float(out_x), float(out_y)])  # fliter our values with a One Euro Filter
-            point_hat = self.one_euro_filter(noisy_point)
-            out_x = point_hat[0]
-            out_y = point_hat[1]
-        except:
-            pass
-        return out_x, out_y
+
+            try:
+                noisy_point = np.array([float(out_x), float(out_y)])  # fliter our values with a One Euro Filter
+                point_hat = self.one_euro_filter(noisy_point)
+                out_x = point_hat[0]
+                out_y = point_hat[1]
+            except:
+                pass
+            return out_x, out_y
+        else:
+            if self.printcal:
+                print("\033[91m[ERROR] Please Calibrate Eye(s).\033[0m")
+                self.printcal = False
+        return 0, 0

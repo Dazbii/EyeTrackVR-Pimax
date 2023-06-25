@@ -18,12 +18,12 @@ class EyeTrackCameraConfig(BaseModel):
     roi_window_h: int = 0
     focal_length: int = 30
     capture_source: Union[int, str, None] = None
-    calib_XMAX: int = None
-    calib_XMIN: int = None
-    calib_YMAX: int = None
-    calib_YMIN: int = None
-    calib_XOFF: int = None
-    calib_YOFF: int = None
+    calib_XMAX: Union[int, None] = None
+    calib_XMIN: Union[int, None] = None
+    calib_YMAX: Union[int, None] = None
+    calib_YMIN: Union[int, None] = None
+    calib_XOFF: Union[int, None] = None
+    calib_YOFF: Union[int, None] = None
 
 
 class EyeTrackSettingsConfig(BaseModel):
@@ -36,6 +36,7 @@ class EyeTrackSettingsConfig(BaseModel):
     gui_BLINK: bool = False
     gui_HSRAC: bool = True
     gui_DADDY: bool = False
+    gui_MOMMY: bool = False
     gui_HSF_radius: int = 15
     gui_HSF_radius_left: int = 10
     gui_HSF_radius_right: int = 10
@@ -57,6 +58,7 @@ class EyeTrackSettingsConfig(BaseModel):
     gui_DADDYP: int = 3
     gui_RANSAC3DP: int = 4
     gui_BLOBP: int = 5
+    gui_MOMMYP: int = 6
     gui_IBO: bool = True
     gui_skip_autoradius: bool = False
     gui_thresh_add: int = 11
@@ -70,7 +72,9 @@ class EyeTrackSettingsConfig(BaseModel):
     ibo_average_output_samples: int = 0
     ibo_fully_close_eye_threshold: float = 0.3
     calibration_samples: int = 600
-
+    osc_right_eye_close_address: str = "/avatar/parameters/RightEyeLidExpandedSqueeze"
+    osc_left_eye_close_address: str = "/avatar/parameters/LeftEyeLidExpandedSqueeze"
+    osc_invert_eye_close: bool = False
 
 
 class EyeTrackConfig(BaseModel):
@@ -118,4 +122,4 @@ class EyeTrackConfig(BaseModel):
                 pass
         with open(CONFIG_FILE_NAME, "w") as settings_file:
             json.dump(obj=self.dict(), fp=settings_file)
-        print("[INFO] Config Saved Successfully")
+        print(f"\033[92m[INFO] Config Saved Successfully\033[0m")
