@@ -3,18 +3,29 @@ import numpy as np
 def BLINK(self): 
 
     if self.blink_clear == True:
+        print('CLEARRR')
         self.max_ints = []
         self.max_int = 0
         self.frames = 0
 
     intensity = np.sum(self.current_image_gray_clean)
-    self.frames = self.frames + 1
-    if len(str(intensity)) >= 8:  # filter abnormally high values
-        print('filter, assume blink')
-        intensity = self.max_int + 1
 
+    if self.calibration_frame_counter == 300:
+        self.filterlist = [] #clear filter
+    if len(self.filterlist) < 300:
+        self.filterlist.append(intensity)
+    else:
+        self.filterlist.pop(0)
+        self.filterlist.append(intensity)
+    if intensity >= np.percentile(self.filterlist, 99) or intensity <= np.percentile(self.filterlist, 1) and len(self.max_ints) >= 1:  # filter abnormally high values
+        try: # I don't want this here but I cant get python to stop crying when it's not
+            intensity = min(self.max_ints)
+        except:
+            pass
+
+    self.frames = self.frames + 1
     if intensity > self.max_int:
-        self.max_int = intensity 
+        self.max_int = intensity
         if self.frames > 300: #TODO: test this number more (make it a setting??)
             self.max_ints.append(self.max_int)
     if intensity < self.min_int:

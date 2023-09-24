@@ -1,7 +1,6 @@
 import json
 import os.path
 import shutil
-
 from eye import EyeId
 from pydantic import BaseModel
 from typing import Union
@@ -14,8 +13,8 @@ class EyeTrackCameraConfig(BaseModel):
     rotation_angle: int = 0
     roi_window_x: int = 0
     roi_window_y: int = 0
-    roi_window_w: int = 0
-    roi_window_h: int = 0
+    roi_window_w: int = 240
+    roi_window_h: int = 240
     focal_length: int = 30
     capture_source: Union[int, str, None] = None
     calib_XMAX: Union[int, None] = None
@@ -36,7 +35,7 @@ class EyeTrackSettingsConfig(BaseModel):
     gui_BLINK: bool = False
     gui_HSRAC: bool = True
     gui_DADDY: bool = False
-    gui_MOMMY: bool = False
+    gui_LEAP: bool = False
     gui_HSF_radius: int = 15
     gui_HSF_radius_left: int = 10
     gui_HSF_radius_right: int = 10
@@ -58,7 +57,7 @@ class EyeTrackSettingsConfig(BaseModel):
     gui_DADDYP: int = 3
     gui_RANSAC3DP: int = 4
     gui_BLOBP: int = 5
-    gui_MOMMYP: int = 6
+    gui_LEAPP: int = 6
     gui_IBO: bool = True
     gui_skip_autoradius: bool = False
     gui_thresh_add: int = 11
@@ -75,6 +74,11 @@ class EyeTrackSettingsConfig(BaseModel):
     osc_right_eye_close_address: str = "/avatar/parameters/RightEyeLidExpandedSqueeze"
     osc_left_eye_close_address: str = "/avatar/parameters/LeftEyeLidExpandedSqueeze"
     osc_invert_eye_close: bool = False
+    gui_RANSACBLINK: bool = True
+    gui_legacy_ransac: bool = False
+    gui_legacy_ransac_thresh_right: int = 80
+    gui_legacy_ransac_thresh_left: int = 80
+
 
 
 class EyeTrackConfig(BaseModel):

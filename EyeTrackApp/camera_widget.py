@@ -10,10 +10,9 @@ from camera_pimax import Camera, CameraState
 from osc import EyeId
 import cv2
 import sys
-from utils.misc_utils import PlaySound,SND_FILENAME,SND_ASYNC
+from utils.misc_utils import PlaySound, SND_FILENAME,SND_ASYNC, resource_path
 import traceback
 import numpy as np
-
 class CameraWidget:
     def __init__(self, widget_id: EyeId, main_config: EyeTrackConfig, osc_queue: Queue):
         self.gui_camera_addr = f"-CAMERAADDR{widget_id}-"
@@ -271,7 +270,7 @@ class CameraWidget:
         if event == self.gui_restart_calibration:
             self.ransac.calibration_frame_counter = self.settings.calibration_samples
             self.ransac.ibo.clear_filter()
-            PlaySound('Audio/start.wav', SND_FILENAME | SND_ASYNC)
+            PlaySound(resource_path('Audio/start.wav'), SND_FILENAME | SND_ASYNC)
 
         if event == self.gui_stop_calibration:
             self.ransac.calibration_frame_counter = 0
@@ -344,21 +343,23 @@ class CameraWidget:
                         
                         graph.draw_circle(
                             (eye_info.x * -100, eye_info.y * -100),
-                            25,
+                            20,
                             fill_color="black",
                             line_color="white",
                         )
                     else:
                         graph.draw_circle(
                             (0.0 * -100, 0.0 * -100),
-                            25,
+                            20,
                             fill_color="black",
                             line_color="white",
                         )
+
                     if not np.isnan(eye_info.blink):
-                        graph.draw_line((-100,eye_info.blink * 200), (-100,100),  color="#6f4ca1", width=10)
+
+                        graph.draw_line((-100, eye_info.blink * 2 * 200), (-100, 100),  color="#6f4ca1", width=10)
                     else:
-                        graph.draw_line((-100, 0.0 * 200), (-100, 100), color="black", width=10)
+                        graph.draw_line((-100, 0.5 * 200), (-100, 100), color="#6f4ca1", width=10)
 
                     if eye_info.blink <= 0.0:
                         graph.update(background_color="#6f4ca1")

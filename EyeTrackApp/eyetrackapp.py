@@ -1,18 +1,15 @@
 import os
-import os
 import PySimpleGUI as sg
 import queue
 import requests
 import threading
-
 from camera_widget import CameraWidget
 from config import EyeTrackConfig
 from eye import EyeId
 from osc import VRChatOSCReceiver, VRChatOSC
 from general_settings_widget import SettingsWidget
 from algo_settings_widget import AlgoSettingsWidget
-
-from utils.misc_utils import is_nt
+from utils.misc_utils import is_nt, resource_path
 
 if is_nt:
     from winotify import Notification
@@ -21,13 +18,11 @@ os.system('color')  # init ANSI color
 # Random environment variable to speed up webcam opening on the MSMF backend.
 # https://github.com/opencv/opencv/issues/17687
 os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
-
 WINDOW_NAME = "EyeTrackApp"
 RIGHT_EYE_NAME = "-RIGHTEYEWIDGET-"
 LEFT_EYE_NAME = "-LEFTEYEWIDGET-"
 SETTINGS_NAME = "-SETTINGSWIDGET-"
 ALGO_SETTINGS_NAME = "-ALGOSETTINGSWIDGET-"
-
 LEFT_EYE_RADIO_NAME = "-LEFTEYERADIO-"
 RIGHT_EYE_RADIO_NAME = "-RIGHTEYERADIO-"
 BOTH_EYE_RADIO_NAME = "-BOTHEYERADIO-"
@@ -35,7 +30,7 @@ SETTINGS_RADIO_NAME = "-SETTINGSRADIO-"
 ALGO_SETTINGS_RADIO_NAME = "-ALGOSETTINGSRADIO-"
 
 page_url = "https://github.com/RedHawk989/EyeTrackVR/releases/latest"
-appversion = "EyeTrackApp 0.2.0 BETA 6"
+appversion = "EyeTrackApp 0.2.0 BETA 7"
 
 
 def main():
@@ -64,7 +59,8 @@ def main():
             try:
                 if is_nt:
                     cwd = os.getcwd()
-                    icon = cwd + "\Images\logo.ico"
+                    #icon = cwd + "\Images\logo.ico"
+                    icon = resource_path("Images/logo.ico")
                     toast = Notification(
                         app_id="EyeTrackApp",
                         title="New Update Available!",
@@ -187,7 +183,7 @@ def main():
 
     # Create the window
     window = sg.Window(
-        f"{appversion}", layout, icon="Images/logo.ico", background_color="#292929"
+        f"{appversion}", layout, icon=resource_path("Images/logo.ico"), background_color="#292929"
     )
 
     # GUI Render loop

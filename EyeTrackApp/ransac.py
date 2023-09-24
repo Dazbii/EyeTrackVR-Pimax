@@ -30,13 +30,25 @@ import numpy as np
 from enum import IntEnum
 from utils.img_utils import safe_crop
 from utils.misc_utils import clamp
+import os
+import psutil
+import sys
+
+process = psutil.Process(os.getpid())  # set process priority to low
+try: # medium chance this does absolutely nothing but eh
+    sys.getwindowsversion()
+except AttributeError:
+    process.nice(0)  # UNIX: 0 low 10 high
+    process.nice()
+else:
+    process.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)  # Windows
+    process.nice()
+
 class EyeId(IntEnum):
     RIGHT = 0
     LEFT = 1
     BOTH = 2
     SETTINGS = 3
-
-
 def ellipse_model(data, y, f):
     """
     There is no need to make this process a function, since making the process a function will slow it down a little by calling it.
@@ -164,6 +176,8 @@ cct = 300
 def RANSAC3D(self, hsrac_en):
     f = False
     ranf = False
+    blink = 0.7
+
 
     if hsrac_en:
         center_x, center_y, upper_x, lower_x, upper_y, lower_y, ransac_lower_x, ransac_lower_y, ransac_upper_x, ransac_upper_y, ransac_xy_offset = get_center_noclamp(
@@ -207,8 +221,14 @@ def RANSAC3D(self, hsrac_en):
     # crop 15% sqare around min_loc
     # frame_gray = frame_gray[max_loc[1] - maxloc1_hf:max_loc[1] + maxloc1_hf,
         #               max_loc[0] - maxloc0_hf:max_loc[0] + maxloc0_hf]
-    
-    threshold_value = min_val + self.settings.gui_thresh_add
+    if self.settings.gui_legacy_ransac:
+        if self.eye_id in [EyeId.LEFT]:
+            threshold_value =  self.settings.gui_legacy_ransac_thresh_right
+        else:
+            threshold_value = self.settings.gui_legacy_ransac_thresh_right
+    else:
+        threshold_value = min_val + self.settings.gui_thresh_add
+
     _, thresh = cv2.threshold(frame_gray, threshold_value, 255, cv2.THRESH_BINARY)
     try:
         opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
@@ -298,9 +318,11 @@ def RANSAC3D(self, hsrac_en):
 
     except:
         f = True
+
+    csy = newFrame2.shape[0]
+    csx = newFrame2.shape[1]
     if hsrac_en:
-        csy = newFrame2.shape[0]
-        csx = newFrame2.shape[1]
+
 
         if ranf:
             cx = self.rawx
@@ -309,6 +331,58 @@ def RANSAC3D(self, hsrac_en):
       #  print(int(cx), int(clamp(cx + ransac_lower_x, 0, csx)), ransac_lower_x, csx, "y", int(cy), int(clamp(cy + ransac_lower_y, 0, csy)), ransac_lower_y, csy)
             cx = int(clamp(cx + ransac_lower_x, 0, csx)) #dunno why this is being weird
             cy = int(clamp(cy + ransac_lower_y, 0, csy))
+
+
+    #print(contours)
+    for cnt in contours:
+        (x, y, w, h) = cv2.boundingRect(cnt)
+        perscalarw = w / csx
+        perscalarh = h / csy
+      #  print(abs(perscalarw-perscalarh))
+       # if abs(perscalarw-perscalarh) >= 0.2: # TODO setting
+        #    blink = 0.0
+
+        if self.settings.gui_RANSACBLINK:
+
+            if self.ran_blink_check_for_file:
+                if self.eye_id in [EyeId.LEFT]:
+                    file_path = 'RANSAC_blink_LEFT.cfg'
+                if self.eye_id in [EyeId.RIGHT]:
+                    file_path = 'RANSAC_blink_RIGHT.cfg'
+                else:
+                    file_path = 'RANSAC_blink_RIGHT.cfg'
+
+                if os.path.exists(file_path):
+                    with open(file_path, 'r') as file:
+                        self.blink_list = [float(line.strip()) for line in file]
+                else:
+                    print(f"\033[93m[INFO] RANSAC Blink Config '{file_path}' not found. Waiting for calibration.\033[0m")
+                self.ran_blink_check_for_file = False
+
+
+            if len(self.blink_list) == 10000: # self calibrate ransac blink IN TESTING
+                if self.eye_id in [EyeId.LEFT]:
+                    with open("RANSAC_BLINK_LEFT.cfg", 'w') as file:
+                        for item in self.blink_list:
+                            file.write(str(item) + '\n')
+
+                if self.eye_id in [EyeId.RIGHT]:
+                    with open("RANSAC_BLINK_RIGHT.cfg", 'w') as file:
+                        for item in self.blink_list:
+                            file.write(str(item) + '\n')
+                print('SAVE')
+
+               # self.blink_list.pop(0)
+                self.blink_list.append(abs(perscalarw-perscalarh))
+
+            elif len(self.blink_list) < 10000:
+                self.blink_list.append(abs(perscalarw-perscalarh))
+
+
+            if abs(perscalarw-perscalarh) >= np.percentile(
+                    self.blink_list, 94
+            ):
+                blink = 0.0
 
 
 
@@ -363,7 +437,7 @@ def RANSAC3D(self, hsrac_en):
     thresh = cv2.resize(thresh, (x,y))
     try:   
         self.failed = 0 # we have succeded, continue with this
-        return cx, cy, thresh
+        return cx, cy, thresh, blink
     except:
         self.failed = self.failed + 1 #we have failed, move onto next algo
-        return 0, 0, thresh
+        return 0, 0, thresh, blink
