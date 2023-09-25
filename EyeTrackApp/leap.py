@@ -198,15 +198,14 @@ class LEAP_C(object):
         #    d2 = math.dist(pre_landmark[2], pre_landmark[4])
          #   d = d + d2
 
-            if len(self.openlist) < 3000: # TODO expose as setting?
+            if len(self.openlist) < 2000: # TODO expose as setting?
                 self.openlist.append(d)
             else:
-                if d >= np.percentile(self.openlist, 96) or d <= np.percentile(self.openlist, 1):
+                if d >= np.percentile(self.openlist, 99) or d <= np.percentile(self.openlist, 1):
                     pass
                 else:
                     self.openlist.pop(0)
                     self.openlist.append(d)
-
 
             try:
                 per = ((d - max(self.openlist)) / (min(self.openlist) - max(self.openlist)))
@@ -220,6 +219,8 @@ class LEAP_C(object):
 
             per = d - 0.1
             self.last_lid = per
+            if per <= 0.1:
+                per == 0.0
          #   print(per)
             return frame, float(x), float(y), per
 
