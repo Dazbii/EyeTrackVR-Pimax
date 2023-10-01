@@ -3,6 +3,30 @@
 [![semantic versioning](https://img.shields.io/badge/semantic%20versioning-2.0.0-green.svg)](https://semver.org)
 > All notable changes to this project will be documented in this file
 
+## [1.0.0-HSF-and-new-algos-feature-branch.8](https://github.com/EyeTrackVR/EyeTrackVR/compare/v1.0.0-HSF-and-new-algos-feature-branch.7...v1.0.0-HSF-and-new-algos-feature-branch.8) (2023-10-01)
+
+
+### 🐛 Bug Fixes
+
+* LEAP Eyelid, tune RANSAC BLINK ([5a6248b](https://github.com/EyeTrackVR/EyeTrackVR/commit/5a6248b897cf37a857148c099bd3336f3dc7f5cd))
+* remove prints ([46427e3](https://github.com/EyeTrackVR/EyeTrackVR/commit/46427e35330e7a15501ecc9fe668a30572a82832))
+
+## [1.0.0-HSF-and-new-algos-feature-branch.7](https://github.com/EyeTrackVR/EyeTrackVR/compare/v1.0.0-HSF-and-new-algos-feature-branch.6...v1.0.0-HSF-and-new-algos-feature-branch.7) (2023-09-28)
+
+
+### 🐛 Bug Fixes
+
+* left eye ransac thresh set to right ([c6fbfe8](https://github.com/EyeTrackVR/EyeTrackVR/commit/c6fbfe8c70b5f75de7060bc3a62b3b8aedbe34f3))
+* left eye ransac thresh set to right ([d11f94f](https://github.com/EyeTrackVR/EyeTrackVR/commit/d11f94f5afe90c0ffb2a9f9eb8a76bc986c8500d))
+
+## [1.0.0-HSF-and-new-algos-feature-branch.6](https://github.com/EyeTrackVR/EyeTrackVR/compare/v1.0.0-HSF-and-new-algos-feature-branch.5...v1.0.0-HSF-and-new-algos-feature-branch.6) (2023-09-27)
+
+
+### 🐛 Bug Fixes
+
+* remove y axis lock (temp) ([2ec7d2d](https://github.com/EyeTrackVR/EyeTrackVR/commit/2ec7d2d4eeed06a7bee0aad31497f55d70749751))
+* tighten blink vec (needs testing/re-write, just minor fix) ([1c2760b](https://github.com/EyeTrackVR/EyeTrackVR/commit/1c2760b382efd52d368a18434f0684ba0383db3e))
+
 ## [1.0.0-HSF-and-new-algos-feature-branch.5](https://github.com/EyeTrackVR/EyeTrackVR/compare/v1.0.0-HSF-and-new-algos-feature-branch.4...v1.0.0-HSF-and-new-algos-feature-branch.5) (2023-09-26)
 
 
